@@ -47,7 +47,7 @@ public final class JUngood {
             langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(JE)", "(JUE)", "(W)", "(U)", "(JU)", "[T+Eng"};
         }
         final Boolean isDelete = Arrays.stream(args).anyMatch("-delete"::equals);
-        final String inputPath = "/home/lex/Downloads/UnGoodMerge/doing/GenMerge/test/Megadrive/"; //args[0];
+        final String inputPath = args[0];//"/home/lex/Downloads/UnGoodMerge/doing/GenMerge/test/Megadrive/"; //args[0];
 
         final List<File> retained = new ArrayList();
         final File[] files = new File(inputPath).listFiles();
