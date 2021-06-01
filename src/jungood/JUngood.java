@@ -41,8 +41,8 @@ public final class JUngood {
         } else {
             langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(UEB)", "(JE)", "(JUE)", "(W)", "(U)", "(JU)", "[T+Eng"};
         }
-        final Boolean isDelete = true;//Arrays.stream(args).anyMatch("-delete"::equals);
-        final String inputPath = "/media/lex/9bc03bd8-d628-44fb-b687-f4cf110a2beb/home/lex/emul/"; //args[0];
+        final Boolean isDelete = Arrays.stream(args).anyMatch("-delete"::equals);
+        final String inputPath = args[0];
 
         final List<File> retained = new ArrayList();
         final File[] files = new File(inputPath).listFiles();
@@ -156,10 +156,6 @@ public final class JUngood {
         public int compare(final File a, final File b) {
             final String aName = a.getName();
             final String bName = b.getName();
-
-            if (aName.startsWith("Alisha's Adventure") || bName.startsWith("Alisha's Adventure")) {
-                System.out.println();
-            }
 
             if (isVerbose) {
                 System.out.println("  comparing " + aName);
