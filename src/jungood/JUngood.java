@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jungood;
 
 import java.io.File;
@@ -14,7 +9,7 @@ import java.util.List;
 
 /**
  *
- * @author lex
+ * @author LexFH
  */
 public final class JUngood {
 
@@ -22,8 +17,8 @@ public final class JUngood {
     private static Boolean isKeepPD;
     private static String[] langs;
     private static final String[] versions = new String[]{"(REV"};
-    private static final String[] noGoods = new String[]{"([o)", "[hI", "(Beta, (Alpha", "[f", "[p"};
-    private static final String[] goods = new String[]{"[!]"};
+    private static final String[] noGoods = new String[]{"([o)", "[hI", "(Beta, (Alpha", "[f", "[p", "[c"};
+    private static final String[] goods = new String[]{"[!]", "[C]"};
 
     /**
      * @param args the command line arguments
@@ -31,23 +26,23 @@ public final class JUngood {
     public static void main(final String[] args) {
         if (args.length == 0) {
             System.out.println("Usage : java -jar jUngood.jar \"path/to/roms/folder/\" options");
-            System.out.println("The roms folder must contain individual roms, unziped");
+            System.out.println("The roms folder must contain individual roms, unziped or ziped one by one.");
             System.out.println("Options :");
             System.out.println(" -delete : applies the selection and deletes unwanted roms from your hard drive. If omitted, nothing is really done, you can safely preview selection in the output.");
             System.out.println(" -english : selects english language versions, if omitted it will be french language.");
             System.out.println(" -keeppd : keeps Public Domain roms. They are deleted by default.");
-            System.out.println(" -verbose  : for debug purpose.");
+            System.out.println(" -verbose : for debug purpose.");
             //return;
         }
         isVerbose = Arrays.stream(args).anyMatch("-verbose"::equals);
         isKeepPD = !Arrays.stream(args).anyMatch("-keepPD"::equals);
         if (Arrays.stream(args).anyMatch("-english"::equals)) {
-            langs = new String[]{"(U)", "[T+Eng", "(M#)", "(E)", "(UE)", "(JU)", "(JUE)", "(W)", "(JU)", "(E)"};
+            langs = new String[]{"(U)", "[T+Eng", "(M#)", "(E)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JU)", "(E)"};
         } else {
-            langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(JE)", "(JUE)", "(W)", "(U)", "(JU)", "[T+Eng"};
+            langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(UEB)", "(JE)", "(JUE)", "(W)", "(U)", "(JU)", "[T+Eng"};
         }
-        final Boolean isDelete = Arrays.stream(args).anyMatch("-delete"::equals);
-        final String inputPath = args[0];//"/home/lex/Downloads/UnGoodMerge/doing/GenMerge/test/Megadrive/"; //args[0];
+        final Boolean isDelete = true;//Arrays.stream(args).anyMatch("-delete"::equals);
+        final String inputPath = "/media/lex/9bc03bd8-d628-44fb-b687-f4cf110a2beb/home/lex/emul/"; //args[0];
 
         final List<File> retained = new ArrayList();
         final File[] files = new File(inputPath).listFiles();
@@ -100,17 +95,18 @@ public final class JUngood {
     }
 
     private static Boolean isInteresting(final File file) {
+        final String tags = getTags(file.getName());
         if (file.getName().contains(" by ")
-                || file.getName().contains("BIOS")
-                || file.getName().contains("(Prototype")
-                || file.getName().contains("Hack)")
-                || file.getName().contains("(Hack")
-                || file.getName().contains("Demo")
-                || file.getName().contains("[b")
-                || file.getName().contains("[h")
-                || file.getName().contains("[t")
                 || file.getName().contains("-in-1")
-                || (isKeepPD && file.getName().contains("(PD)"))) {
+                || tags.contains("BIOS")
+                || tags.contains("Prototype")
+                || tags.contains("Hack")
+                || tags.contains("Debug")
+                || tags.contains("Demo")
+                || tags.contains("[b")
+                || tags.contains("[h")
+                || tags.contains("[t")
+                || (isKeepPD && tags.contains("(PD)"))) {
             if (isVerbose) {
                 System.out.println("  - rejecting " + file.getName());
             }
@@ -131,7 +127,27 @@ public final class JUngood {
         if (par > 0) {
             return string.substring(0, par - 1);
         }
-        return string.substring(0, brack - 1);
+        try {
+            return string.substring(0, brack - 1);
+        } catch (final StringIndexOutOfBoundsException ex) {
+            return string;
+        }
+    }
+
+    private static String getTags(final String string) {
+        final int par = string.indexOf("(");
+        final int brack = string.indexOf("[");
+        if (par > 0 && brack > 0) {
+            return string.substring(Math.min(par, brack) - 1);
+        }
+        if (par > 0) {
+            return string.substring(par - 1);
+        }
+        try {
+            return string.substring(brack - 1);
+        } catch (final IndexOutOfBoundsException ex) {
+            return "";
+        }
     }
 
     private static final class LanguageComparator implements Comparator<File> {
@@ -140,6 +156,10 @@ public final class JUngood {
         public int compare(final File a, final File b) {
             final String aName = a.getName();
             final String bName = b.getName();
+
+            if (aName.startsWith("Alisha's Adventure") || bName.startsWith("Alisha's Adventure")) {
+                System.out.println();
+            }
 
             if (isVerbose) {
                 System.out.println("  comparing " + aName);
@@ -171,6 +191,21 @@ public final class JUngood {
                         System.out.println("      prefering " + Math.negateExact(aName.compareTo(bName)));
                     }
                     return Math.negateExact(aName.compareTo(bName));
+                }
+                //Tries to get a non japanese version
+                if (aName.contains("[J]") && bName.contains("[J]")) {
+                    if (aName.contains("[T+") && !bName.contains("[T+")) {
+                        if (isVerbose) {
+                            System.out.println("      prefering " + aName);
+                        }
+                        return -1;
+                    }
+                    if (bName.contains("[T+") && !aName.contains("[T+")) {
+                        if (isVerbose) {
+                            System.out.println("      prefering " + aName);
+                        }
+                        return 1;
+                    }
                 }
             }
 
