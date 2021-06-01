@@ -1,5 +1,4 @@
 # jUngood
-Utility to select roms by language and other criteria in GoodSets
 Usage : java -jar jUngood.jar "path/to/roms/folder/" options
 The roms folder must contain individual roms, unziped or ziped one by one.
 Options :
