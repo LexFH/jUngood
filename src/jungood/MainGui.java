@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jungood;
 
 import java.io.File;
@@ -17,7 +12,7 @@ import javax.swing.JFileChooser;
 
 /**
  *
- * @author lex
+ * @author LexFH
  */
 public final class MainGui extends javax.swing.JFrame {
 
@@ -361,17 +356,6 @@ public final class MainGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbGoActionPerformed
-        /* if (args.length == 0) {
-            output +="\nUsage : java -jar jUngood.jar \"path/to/roms/folder/\" options");
-            output +="\nThe roms folder must contain individual roms, unziped or ziped one by one.");
-            output +="\nOptions :");
-            output +="\n -delete : applies the selection and deletes unwanted roms from your hard drive. If omitted, nothing is really done, you can safely preview selection in the output.");
-            output +="\n -english : selects english language versions, if omitted it will be french language.");
-            output +="\n -keeppd : keeps Public Domain roms. They are deleted by default.");
-            output +="\n -verbose : for debug purpose.");
-            //return;
-        }
-         */
         try {
             if (this.jrbEnglish.isSelected()) {
                 langs = new String[]{"(U)", "[T+Eng", "(M#)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JUE)", "(UEB)", "(E)"};
