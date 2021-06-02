@@ -37,12 +37,12 @@ public final class JUngood {
         isVerbose = Arrays.stream(args).anyMatch("-verbose"::equals);
         isKeepPD = !Arrays.stream(args).anyMatch("-keepPD"::equals);
         if (Arrays.stream(args).anyMatch("-english"::equals)) {
-            langs = new String[]{"(U)", "[T+Eng", "(M#)", "(E)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JU)", "(E)"};
+            langs = new String[]{"(U)", "[T+Eng", "(M#)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JUE)", "(UEB)", "(E)"};
         } else {
-            langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(UEB)", "(JE)", "(JUE)", "(W)", "(U)", "(JU)", "[T+Eng"};
+            langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(UEB)", "(JE)", "(JUE)", "(EB)", "(UEB)", "(EBK)", "(W)", "(U)", "(JU)", "[T+Eng"};
         }
         final Boolean isDelete = Arrays.stream(args).anyMatch("-delete"::equals);
-        final String inputPath = args[0];
+        final String inputPath = "/home/lex/Downloads/JDownloader/GoodSMSNonGoodSMS/GoodSMS v3.20/";//args[0];
 
         final List<File> retained = new ArrayList();
         final File[] files = new File(inputPath).listFiles();
@@ -80,7 +80,7 @@ public final class JUngood {
 
         System.out.println("Selecting best version in " + groupedResults.size() + " groups");
         for (final List<File> group : groupedResults) {
-            final LanguageComparator languageComparator = new LanguageComparator();
+            final GroupComparator languageComparator = new GroupComparator();
             Collections.sort(group, languageComparator);
             System.out.println("  + Retaining " + group.get(0).getName());
             for (int i = 1; i < group.size(); i++) {
@@ -150,7 +150,7 @@ public final class JUngood {
         }
     }
 
-    private static final class LanguageComparator implements Comparator<File> {
+    private static final class GroupComparator implements Comparator<File> {
 
         @Override
         public int compare(final File a, final File b) {
@@ -176,19 +176,20 @@ public final class JUngood {
                     }
                     return 1;
                 }
-                if (aName.contains("[T+Fre") && aName.contains("[T+Fre")) {
+                //prefers newer version of a translation
+                if (aName.contains("[T+Fre") && bName.contains("[T+Fre")) {
                     if (isVerbose) {
                         System.out.println("      prefering " + Math.negateExact(aName.compareTo(bName)));
                     }
                     return Math.negateExact(aName.compareTo(bName));
                 }
-                if (aName.contains("[T+Eng") && aName.contains("[T+Eng")) {
+                if (aName.contains("[T+Eng") && bName.contains("[T+Eng")) {
                     if (isVerbose) {
                         System.out.println("      prefering " + Math.negateExact(aName.compareTo(bName)));
                     }
                     return Math.negateExact(aName.compareTo(bName));
                 }
-                //Tries to get a non japanese version
+                //Tries to get a non japanese or chinese version
                 if (aName.contains("[J]") && bName.contains("[J]")) {
                     if (aName.contains("[T+") && !bName.contains("[T+")) {
                         if (isVerbose) {
@@ -198,22 +199,41 @@ public final class JUngood {
                     }
                     if (bName.contains("[T+") && !aName.contains("[T+")) {
                         if (isVerbose) {
-                            System.out.println("      prefering " + aName);
+                            System.out.println("      prefering " + bName);
                         }
                         return 1;
                     }
                 }
-            }
-
-            //compares version
-            for (final String crit : versions) {
-                if (aName.contains(crit) && bName.contains(crit)) {
+                if (aName.contains("[Ch]") && bName.contains("[Ch]")) {
+                    if (aName.contains("[T+") && !bName.contains("[T+")) {
+                        if (isVerbose) {
+                            System.out.println("      prefering " + aName);
+                        }
+                        return -1;
+                    }
+                    if (bName.contains("[T+") && !aName.contains("[T+")) {
+                        if (isVerbose) {
+                            System.out.println("      prefering " + bName);
+                        }
+                        return 1;
+                    }
+                }
+                //selects newest version
+                if (aName.contains("[T+Fre") && bName.contains("[T+Fre")) {
                     if (isVerbose) {
                         System.out.println("      prefering " + Math.negateExact(aName.compareTo(bName)));
                     }
                     return Math.negateExact(aName.compareTo(bName));
                 }
             }
+
+            //compares version
+                if (aName.contains("(V") && bName.contains("(V")) {
+                    if (isVerbose) {
+                        System.out.println("      prefering " + Math.negateExact(aName.compareTo(bName)));
+                    }
+                    return Math.negateExact(aName.substring(aName.indexOf("(V")+2, aName.length()).compareTo(bName.substring(bName.indexOf("(V")+2, bName.length())));
+                }
 
             //downgrades unpleasant factors
             for (final String crit : noGoods) {
