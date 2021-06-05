@@ -15,9 +15,11 @@ import javax.swing.JFileChooser;
  * @author LexFH
  */
 public final class MainGui extends javax.swing.JFrame {
+//find . -type f -execdir 7z a '{}.7z' '{}' \;
 
     private String[] langs;
-    private static final String[] versions = new String[]{"(REV", "(V"};
+    private static final String[] badLangs = new String[]{"(Ch)", "(China)", "(J)", "(Japan)"};
+    private static final String[] versions = new String[]{"(REV", "(V", "[a"};
     private static final String[] noGoods = new String[]{"([o)", "[hI", "(Beta, (Alpha", "[f", "[p", "[c"};
     private static final String[] goods = new String[]{"[!]", "[C]"};
     private static String output;
@@ -32,9 +34,14 @@ public final class MainGui extends javax.swing.JFrame {
 
     private Boolean isInteresting(final File file) {
         final String tags = getTags(file.getName());
-        if (file.getName().contains(" by ")
-                || file.getName().contains("-in-1")
+        if (file.getName().contains("-in-1")
+                || file.getName().contains(" in 1 ")
+                || file.getName().contains(" Game Pack")
+                || file.getName().contains(" Games in One")
+                || file.getName().contains(" Jeux en ")
+                || file.getName().contains(" Games in 1")
                 || file.getName().contains("BIOS")
+                || file.getName().contains(" Demo ")
                 || tags.contains("Prototype")
                 || tags.contains("Hack")
                 || tags.contains("Debug")
@@ -42,7 +49,7 @@ public final class MainGui extends javax.swing.JFrame {
                 || tags.contains("[b")
                 || tags.contains("[h")
                 || tags.contains("[t")
-                || (jcbKeepPD.isSelected() && tags.contains("(PD)"))) {
+                || (!jcbKeepPD.isSelected() && (tags.contains("(PD)") || file.getName().contains(" by ")))) {
             if (jcbVerbose.isSelected()) {
                 output += "\n  - rejecting " + file.getName();
             }
@@ -127,36 +134,24 @@ public final class MainGui extends javax.swing.JFrame {
                     return index;
                 }
                 //Tries to get a non japanese or chinese version
-                if (aName.contains("[J]") && bName.contains("[J]")) {
-                    if (aName.contains("[T+") && !bName.contains("[T+")) {
-                        if (jcbVerbose.isSelected()) {
-                            output += "\n         -> " + aName;
+                for (final String badLang : badLangs) {
+                    if (aName.contains(badLang) && bName.contains(badLang)) {
+                        if (aName.contains("[T+") && !bName.contains("[T+")) {
+                            if (jcbVerbose.isSelected()) {
+                                output += "\n         -> " + aName;
+                            }
+                            return -1;
                         }
-                        return -1;
-                    }
-                    if (bName.contains("[T+") && !aName.contains("[T+")) {
-                        if (jcbVerbose.isSelected()) {
-                            output += "\n         -> " + bName;
+                        if (bName.contains("[T+") && !aName.contains("[T+")) {
+                            if (jcbVerbose.isSelected()) {
+                                output += "\n         -> " + bName;
+                            }
+                            return 1;
                         }
-                        return 1;
-                    }
-                }
-                if (aName.contains("[Ch]") && bName.contains("[Ch]")) {
-                    if (aName.contains("[T+") && !bName.contains("[T+")) {
-                        if (jcbVerbose.isSelected()) {
-                            output += "\n         -> " + aName;
-                        }
-                        return -1;
-                    }
-                    if (bName.contains("[T+") && !aName.contains("[T+")) {
-                        if (jcbVerbose.isSelected()) {
-                            output += "\n         -> " + bName;
-                        }
-                        return 1;
                     }
                 }
                 //selects newest version
-                if (aName.contains("[T+Fre") && bName.contains("[T+Fre")) {
+                if (aName.contains("[T+") && bName.contains("[T+")) {
                     if (jcbVerbose.isSelected()) {
                         output += "\n         -> " + Math.negateExact(aName.compareTo(bName));
                     }
@@ -358,9 +353,9 @@ public final class MainGui extends javax.swing.JFrame {
     private void jbGoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbGoActionPerformed
         try {
             if (this.jrbEnglish.isSelected()) {
-                langs = new String[]{"(U)", "[T+Eng", "(M#)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JUE)", "(UEB)", "(E)"};
+                langs = new String[]{"(U)", "USA", "[T+Eng", "(M#)", "(UE)", "(UEB)", "(JU)", "(JUE)", "(W)", "(JUE)", "(UEB)", "(E)", "(Europe)"};
             } else {
-                langs = new String[]{"(F)", "[T+Fre", "(CF)", "(M#)", "(E)", "(UE)", "(UEB)", "(JE)", "(JUE)", "(EB)", "(UEB)", "(EBK)", "(W)", "(U)", "(JU)", "[T+Eng"};
+                langs = new String[]{"(F)", "(FR)", "[T+Fre", "(CF)", "(M#)", "(E)", "Europe", "(UE)", "(UEB)", "(JE)", "(JUE)", "(EB)", "(UEB)", "(EBK)", "(W)", "(U)", "USA", "(JU)", "[T+Eng"};
             }
             final String inputPath = (this.jtfPath.getText().endsWith("/")) ? (this.jtfPath.getText()) : (this.jtfPath.getText() + "/");
 
@@ -454,29 +449,6 @@ public final class MainGui extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainGui.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainGui.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainGui.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainGui.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             new MainGui().setVisible(true);
